@@ -269,9 +269,9 @@
     "tf": "1",
     "precio_entrada": 71.97,
     "timestamp": "2026-06-15T11:07:02.934Z",
-    "estado": "abierta_fase3",
+    "estado": "abierta_caballo",
     "resultado_pct": 1.219,
-    "actualizado_utc": "2026-06-17T17:16:29.397543+00:00"
+    "actualizado_utc": "2026-06-17T17:18:44.836103+00:00"
   },
   "32": {
     "simbolo": "XRPUSDT",
@@ -279,9 +279,9 @@
     "tf": "1",
     "precio_entrada": 1.1866,
     "timestamp": "2026-06-15T10:36:02.418Z",
-    "estado": "abierta_fase3",
+    "estado": "abierta_caballo",
     "resultado_pct": 1.269,
-    "actualizado_utc": "2026-06-17T17:16:29.397543+00:00"
+    "actualizado_utc": "2026-06-17T17:18:44.836103+00:00"
   },
   "31": {
     "simbolo": "SOLUSDT",
@@ -289,9 +289,9 @@
     "tf": "5",
     "precio_entrada": 71.36,
     "timestamp": "2026-06-15T10:05:04.803Z",
-    "estado": "abierta_fase3",
+    "estado": "abierta_caballo",
     "resultado_pct": 1.537,
-    "actualizado_utc": "2026-06-17T17:16:29.397543+00:00"
+    "actualizado_utc": "2026-06-17T17:18:44.836103+00:00"
   },
   "30": {
     "simbolo": "XRPUSDT",
@@ -299,9 +299,9 @@
     "tf": "3",
     "precio_entrada": 1.1847,
     "timestamp": "2026-06-15T09:54:03.869Z",
-    "estado": "abierta_fase3",
+    "estado": "abierta_caballo",
     "resultado_pct": 1.326,
-    "actualizado_utc": "2026-06-17T17:16:29.397543+00:00"
+    "actualizado_utc": "2026-06-17T17:18:44.836103+00:00"
   },
   "29": {
     "simbolo": "SOLUSDT",
@@ -408,9 +408,9 @@
     "tf": "1",
     "precio_entrada": 1.1351,
     "timestamp": "2026-06-14T15:52:04.334Z",
-    "estado": "abierta_fase3",
+    "estado": "abierta_caballo",
     "resultado_pct": 3.067,
-    "actualizado_utc": "2026-06-17T17:16:29.397543+00:00"
+    "actualizado_utc": "2026-06-17T17:18:44.836103+00:00"
   },
   "19": {
     "simbolo": "XRPUSDT",
