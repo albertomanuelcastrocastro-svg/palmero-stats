@@ -1,5 +1,5 @@
 """
-PALMERO - Historiador de Señales (v6: filtro TF5 y TF15)
+PALMERO - Historiador de Señales (v7: ATR ambicioso TF5+TF15)
 """
 
 import os
@@ -38,25 +38,6 @@ CONFIGS = {
         "sl_pct": -0.005,
         "stop_fijo": False,
     },
-    "margen_amplio": {
-        "tramos": [
-            {"tp_pct": 0.005, "peso": 0.40},
-            {"tp_pct": 0.008, "peso": 0.30},
-            {"tp_pct": None,  "peso": 0.30},
-        ],
-        "sl_pct": -0.005,
-        "stop_fijo": False,
-        "margen_be": -0.003,
-    },
-    "sin_be_margen_amplio": {
-        "tramos": [
-            {"tp_pct": 0.005, "peso": 0.40},
-            {"tp_pct": 0.008, "peso": 0.30},
-            {"tp_pct": None,  "peso": 0.30},
-        ],
-        "sl_pct": -0.005,
-        "stop_fijo": True,
-    },
     "escala_amplia": {
         "tramos": [
             {"tp_pct": 0.01,  "peso": 0.40},
@@ -66,36 +47,6 @@ CONFIGS = {
         "sl_pct": -0.02,
         "stop_fijo": True,
         "margen_be": -0.01,
-    },
-    "nueva_filosofia_a": {
-        "tramos": [
-            {"tp_pct": 0.00625, "peso": 0.40},
-            {"tp_pct": 0.01,    "peso": 0.20},
-            {"tp_pct": 0.02,    "peso": 0.20},
-            {"tp_pct": 0.05,    "peso": 0.20},
-        ],
-        "sl_pct": -0.01,
-        "stop_fijo": True,
-    },
-    "nueva_filosofia_b": {
-        "tramos": [
-            {"tp_pct": 0.00625, "peso": 0.40},
-            {"tp_pct": 0.01,    "peso": 0.30},
-            {"tp_pct": 0.02,    "peso": 0.10},
-            {"tp_pct": 0.05,    "peso": 0.20},
-        ],
-        "sl_pct": -0.01,
-        "stop_fijo": True,
-    },
-    "filosofia_sl05": {
-        "tramos": [
-            {"tp_pct": 0.005,  "peso": 0.50},
-            {"tp_pct": 0.01,   "peso": 0.20},
-            {"tp_pct": 0.02,   "peso": 0.20},
-            {"tp_pct": 0.05,   "peso": 0.10},
-        ],
-        "sl_pct": -0.005,
-        "stop_fijo": True,
     },
 }
 
@@ -109,6 +60,21 @@ ATR_CONFIGS = {
         "sl_mult": -2.0, "tp1_mult": 1.2, "tp1_peso": 0.40,
         "tp2_mult": 2.0, "tp2_peso": 0.30,
         "stop_tras_tp1_mult": -0.3, "stop_tras_tp2_mult": -0.3,
+    },
+    "atr_tf5_15_conservador": {
+        "sl_mult": -2.0, "tp1_mult": 1.5, "tp1_peso": 0.40,
+        "tp2_mult": 2.5, "tp2_peso": 0.30,
+        "stop_tras_tp1_mult": -1.0, "stop_tras_tp2_mult": -1.0,
+    },
+    "atr_tf5_15_amplio": {
+        "sl_mult": -3.0, "tp1_mult": 2.0, "tp1_peso": 0.40,
+        "tp2_mult": 4.0, "tp2_peso": 0.30,
+        "stop_tras_tp1_mult": -1.5, "stop_tras_tp2_mult": -1.5,
+    },
+    "atr_tf5_15_asimetrico": {
+        "sl_mult": -1.5, "tp1_mult": 1.0, "tp1_peso": 0.40,
+        "tp2_mult": 2.0, "tp2_peso": 0.30,
+        "stop_tras_tp1_mult": -0.75, "stop_tras_tp2_mult": -0.75,
     },
 }
 
@@ -250,7 +216,7 @@ def construir_cfg_atr(signal, atr_cfg):
             {"tp_pct": None, "peso": 1 - atr_cfg["tp1_peso"] - atr_cfg["tp2_peso"]},
         ],
         "sl_pct": atr_cfg["sl_mult"] * atr_pct,
-        "stop_fijo": False,
+        "stop_fijo": True,
         "margen_be": atr_cfg["stop_tras_tp1_mult"] * atr_pct,
     }
 
@@ -442,7 +408,7 @@ def calcular_resumen():
 @app.route("/")
 def home():
     return jsonify({
-        "servicio": "PALMERO - Historiador de señales (v6, filtro TF5+TF15)",
+        "servicio": "PALMERO - Historiador de señales (v7, ATR ambicioso TF5+TF15)",
         "nota": "Laboratorio solo sobre señales TF5 y TF15.",
         "endpoints": [
             "/stats - resumen real (config actual) todas las señales",
