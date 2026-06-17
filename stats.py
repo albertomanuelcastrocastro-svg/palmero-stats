@@ -57,6 +57,11 @@ CONFIGS = {
         "tp2_pct": 0.008, "tp2_peso": 0.30,
         "stop_tras_tp1_pct": -0.005, "stop_tras_tp2_pct": -0.005,
     },
+    "sin_be_margen_amplio": {
+        "sl_pct": -0.005, "tp1_pct": 0.005, "tp1_peso": 0.40,
+        "tp2_pct": 0.008, "tp2_peso": 0.30,
+        "stop_tras_tp1_pct": -0.003, "stop_tras_tp2_pct": -0.003,
+    },
 }
 
 ATR_CONFIGS = {
