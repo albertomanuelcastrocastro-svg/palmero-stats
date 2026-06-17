@@ -1,23 +1,5 @@
 """
-PALMERO - Historiador de Señales (v4: laboratorio cacheado + configs ATR)
-==========================================================================
-Servicio independiente y de SOLO LECTURA sobre signals_log.json.
-No modifica superb-growth ni signals_log.json.
-
-Simula la operativa de PALMERO (SL/TP1/TP2/tramo final) usando velas
-reales de Binance, tanto con porcentajes fijos como con distancias
-basadas en ATR (volatilidad real en el momento de cada señal).
-
-El laboratorio ya NO se calcula en caliente al pedir /laboratorio —
-se recalcula en segundo plano cada ciclo y se sirve cacheado, así
-nunca hace esperar a quien lo consulta.
-
-Limitacion conocida: solo se usan maximos/minimos de cada vela (no hay
-datos tick a tick); si en una misma vela se cruzan dos niveles, se asume
-el orden mas favorable. Ventana de busqueda: hasta ~33h desde la señal.
-
-AVISO: con pocas señales por TF, el laboratorio es orientativo, no una
-optimizacion fiable todavia.
+PALMERO - Historiador de Señales (v4: laboratorio cacheado + configs ATR + sin_breakeven)
 """
 
 import os
@@ -347,12 +329,10 @@ def procesar():
                     existente = resultados.get(sid)
                     if existente and existente.get("estado", "").startswith("cerrada"):
                         continue
-
                     velas = obtener_velas(s)
                     sim = simular_trade_config(s, velas, CONFIGS["actual"])
                     if not sim:
                         continue
-
                     resultados[sid] = {
                         "simbolo": s["simbolo"], "tipo": s["tipo"], "tf": s["tf"],
                         "precio_entrada": float(s["precio"]), "timestamp": s["timestamp"],
@@ -422,13 +402,13 @@ def calcular_resumen():
 @app.route("/")
 def home():
     return jsonify({
-        "servicio": "PALMERO - Historiador de señales (v4, laboratorio cacheado + ATR)",
+        "servicio": "PALMERO - Historiador de señales (v4, laboratorio cacheado + ATR + sin_breakeven)",
         "nota": "Solo lectura sobre signals_log.json. No modifica superb-growth.",
         "endpoints": [
             "/stats - resumen real (config actual) por simbolo y TF",
             "/stats/raw - resultados detallados",
             "/stats/t/<bust> - version sin cache",
-            "/laboratorio - compara configuraciones (fijas + ATR), cacheado cada 10 min",
+            "/laboratorio - compara configuraciones (fijas + ATR + sin_breakeven), cacheado cada 10 min",
             "/laboratorio/t/<bust> - version sin cache",
         ],
     })
