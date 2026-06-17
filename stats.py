@@ -70,6 +70,11 @@ CONFIGS = {
         "tp2_pct": 0.006, "tp2_peso": 0.30,
         "stop_tras_tp1_pct": 0.0, "stop_tras_tp2_pct": 0.0,
     },
+    "sin_breakeven": {
+        "sl_pct": -0.005, "tp1_pct": 0.005, "tp1_peso": 0.40,
+        "tp2_pct": 0.008, "tp2_peso": 0.30,
+        "stop_tras_tp1_pct": -0.005, "stop_tras_tp2_pct": -0.005,
+    },
 }
 
 ATR_CONFIGS = {
