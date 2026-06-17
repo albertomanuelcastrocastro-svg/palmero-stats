@@ -1,21 +1,23 @@
 """
-PALMERO - Historiador de Señales (v3: + laboratorio de configuraciones)
+PALMERO - Historiador de Señales (v4: laboratorio cacheado + configs ATR)
 ==========================================================================
 Servicio independiente y de SOLO LECTURA sobre signals_log.json.
 No modifica superb-growth ni signals_log.json.
 
 Simula la operativa de PALMERO (SL/TP1/TP2/tramo final) usando velas
-reales de Binance. Ademas de la configuracion "actual" (la que produccion
-usa de verdad), prueba un puñado de configuraciones alternativas sobre
-las mismas señales para comparar resultado medio y winrate.
+reales de Binance, tanto con porcentajes fijos como con distancias
+basadas en ATR (volatilidad real en el momento de cada señal).
+
+El laboratorio ya NO se calcula en caliente al pedir /laboratorio —
+se recalcula en segundo plano cada ciclo y se sirve cacheado, así
+nunca hace esperar a quien lo consulta.
 
 Limitacion conocida: solo se usan maximos/minimos de cada vela (no hay
 datos tick a tick); si en una misma vela se cruzan dos niveles, se asume
 el orden mas favorable. Ventana de busqueda: hasta ~33h desde la señal.
 
 AVISO: con pocas señales por TF, el laboratorio es orientativo, no una
-optimizacion fiable. Sirve para detectar tendencias, no para fijar
-parametros definitivos todavia.
+optimizacion fiable todavia.
 """
 
 import os
@@ -40,6 +42,7 @@ BINANCE_KLINES_URL = "https://data-api.binance.vision/api/v3/klines"
 
 MAX_PAGINAS = 2
 POLL_SECONDS = 600
+ATR_PERIODOS = 14
 
 CONFIGS = {
     "actual": {
@@ -69,8 +72,23 @@ CONFIGS = {
     },
 }
 
+ATR_CONFIGS = {
+    "atr_conservador": {
+        "sl_mult": -1.5, "tp1_mult": 1.0, "tp1_peso": 0.40,
+        "tp2_mult": 1.6, "tp2_peso": 0.30,
+        "stop_tras_tp1_mult": 0.0, "stop_tras_tp2_mult": 0.0,
+    },
+    "atr_amplio": {
+        "sl_mult": -2.0, "tp1_mult": 1.2, "tp1_peso": 0.40,
+        "tp2_mult": 2.0, "tp2_peso": 0.30,
+        "stop_tras_tp1_mult": -0.3, "stop_tras_tp2_mult": -0.3,
+    },
+}
+
 _lock = threading.Lock()
 _velas_cache = {}
+_atr_cache = {}
+_laboratorio_cache = {"timestamp_utc": None, "comparacion": None}
 
 
 def gh_headers():
@@ -159,8 +177,58 @@ def obtener_velas(signal):
     return velas
 
 
+def calcular_atr(velas, periodos=ATR_PERIODOS):
+    if len(velas) < periodos + 1:
+        return None
+    trs = []
+    for i in range(1, len(velas)):
+        high = float(velas[i][2])
+        low = float(velas[i][3])
+        prev_close = float(velas[i - 1][4])
+        trs.append(max(high - low, abs(high - prev_close), abs(low - prev_close)))
+    if len(trs) < periodos:
+        return None
+    return sum(trs[-periodos:]) / periodos
+
+
+def obtener_atr_en_senal(signal):
+    sid = str(signal["id"])
+    if sid in _atr_cache:
+        return _atr_cache[sid]
+    ts = datetime.fromisoformat(signal["timestamp"].replace("Z", "+00:00"))
+    end_ms = int(ts.timestamp() * 1000)
+    try:
+        params = {"symbol": signal["simbolo"], "interval": "5m", "endTime": end_ms, "limit": 20}
+        resp = requests.get(BINANCE_KLINES_URL, params=params, timeout=10)
+        resp.raise_for_status()
+        velas_prev = resp.json()
+    except Exception as e:
+        print("Error ATR:", signal["simbolo"], e)
+        velas_prev = []
+    atr = calcular_atr(velas_prev)
+    _atr_cache[sid] = atr
+    return atr
+
+
+def construir_cfg_atr(signal, atr_cfg):
+    atr = obtener_atr_en_senal(signal)
+    entry = float(signal["precio"])
+    if not atr or entry == 0:
+        return None
+    atr_pct = atr / entry
+    return {
+        "sl_pct": atr_cfg["sl_mult"] * atr_pct,
+        "tp1_pct": atr_cfg["tp1_mult"] * atr_pct,
+        "tp1_peso": atr_cfg["tp1_peso"],
+        "tp2_pct": atr_cfg["tp2_mult"] * atr_pct,
+        "tp2_peso": atr_cfg["tp2_peso"],
+        "stop_tras_tp1_pct": atr_cfg["stop_tras_tp1_mult"] * atr_pct,
+        "stop_tras_tp2_pct": atr_cfg["stop_tras_tp2_mult"] * atr_pct,
+    }
+
+
 def simular_trade_config(signal, velas, cfg):
-    if not velas:
+    if not velas or cfg is None:
         return None
     entry = float(signal["precio"])
     es_long = "LONG" in signal["tipo"]
@@ -222,6 +290,44 @@ def simular_trade_config(signal, velas, cfg):
     return {"estado": estado, "resultado_pct": round(resultado * 100, 3)}
 
 
+def calcular_laboratorio_interno(signals):
+    salida = []
+    for nombre, cfg in CONFIGS.items():
+        valores = []
+        for s in signals:
+            velas = obtener_velas(s)
+            r = simular_trade_config(s, velas, cfg)
+            if r:
+                valores.append(r["resultado_pct"])
+        fila = {"config": nombre, "n": len(valores)}
+        if valores:
+            fila["resultado_promedio_pct"] = round(sum(valores) / len(valores), 3)
+            fila["winrate_pct"] = round(sum(1 for x in valores if x > 0) / len(valores) * 100, 1)
+        else:
+            fila["resultado_promedio_pct"] = None
+            fila["winrate_pct"] = None
+        salida.append(fila)
+
+    for nombre, atr_cfg in ATR_CONFIGS.items():
+        valores = []
+        for s in signals:
+            velas = obtener_velas(s)
+            cfg = construir_cfg_atr(s, atr_cfg)
+            r = simular_trade_config(s, velas, cfg)
+            if r:
+                valores.append(r["resultado_pct"])
+        fila = {"config": nombre, "n": len(valores)}
+        if valores:
+            fila["resultado_promedio_pct"] = round(sum(valores) / len(valores), 3)
+            fila["winrate_pct"] = round(sum(1 for x in valores if x > 0) / len(valores) * 100, 1)
+        else:
+            fila["resultado_promedio_pct"] = None
+            fila["winrate_pct"] = None
+        salida.append(fila)
+
+    return salida
+
+
 def procesar():
     while True:
         try:
@@ -253,6 +359,10 @@ def procesar():
                 if cambiado:
                     save_resultados(resultados, sha)
                     print(f"[{ahora}] Resultados actualizados")
+
+                _laboratorio_cache["comparacion"] = calcular_laboratorio_interno(signals)
+                _laboratorio_cache["timestamp_utc"] = ahora
+                print(f"[{ahora}] Laboratorio actualizado")
 
         except Exception as e:
             print("Error en bucle de procesamiento:", e)
@@ -304,38 +414,16 @@ def calcular_resumen():
     return salida
 
 
-def calcular_laboratorio():
-    signals = load_signals()
-    salida = []
-    for nombre, cfg in CONFIGS.items():
-        valores = []
-        for s in signals:
-            velas = obtener_velas(s)
-            r = simular_trade_config(s, velas, cfg)
-            if r:
-                valores.append(r["resultado_pct"])
-        if valores:
-            fila = {
-                "config": nombre, "n": len(valores),
-                "resultado_promedio_pct": round(sum(valores) / len(valores), 3),
-                "winrate_pct": round(sum(1 for x in valores if x > 0) / len(valores) * 100, 1),
-            }
-        else:
-            fila = {"config": nombre, "n": 0, "resultado_promedio_pct": None, "winrate_pct": None}
-        salida.append(fila)
-    return salida
-
-
 @app.route("/")
 def home():
     return jsonify({
-        "servicio": "PALMERO - Historiador de señales (v3, + laboratorio)",
+        "servicio": "PALMERO - Historiador de señales (v4, laboratorio cacheado + ATR)",
         "nota": "Solo lectura sobre signals_log.json. No modifica superb-growth.",
         "endpoints": [
             "/stats - resumen real (config actual) por simbolo y TF",
             "/stats/raw - resultados detallados",
             "/stats/t/<bust> - version sin cache",
-            "/laboratorio - compara configuraciones SL/TP alternativas",
+            "/laboratorio - compara configuraciones (fijas + ATR), cacheado cada 10 min",
             "/laboratorio/t/<bust> - version sin cache",
         ],
     })
@@ -359,7 +447,9 @@ def stats_nocache(bust):
 
 @app.route("/laboratorio")
 def laboratorio():
-    return jsonify({"timestamp_utc": datetime.now(timezone.utc).isoformat(), "comparacion": calcular_laboratorio()})
+    if _laboratorio_cache["comparacion"] is None:
+        return jsonify({"estado": "calculando, prueba en unos minutos", "timestamp_utc": None, "comparacion": []})
+    return jsonify(_laboratorio_cache)
 
 
 @app.route("/laboratorio/t/<bust>")
