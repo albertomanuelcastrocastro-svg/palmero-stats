@@ -62,6 +62,11 @@ CONFIGS = {
         "tp2_pct": 0.008, "tp2_peso": 0.30,
         "stop_tras_tp1_pct": -0.003, "stop_tras_tp2_pct": -0.003,
     },
+    "escala_amplia": {
+        "sl_pct": -0.02, "tp1_pct": 0.01, "tp1_peso": 0.40,
+        "tp2_pct": 0.016, "tp2_peso": 0.30,
+        "stop_tras_tp1_pct": -0.01, "stop_tras_tp2_pct": -0.01,
+    },
 }
 
 ATR_CONFIGS = {
