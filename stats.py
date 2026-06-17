@@ -1,15 +1,21 @@
 """
-PALMERO - Historiador de Señales
-==================================
+PALMERO - Historiador de Señales (v2: simulación real de SL/TP)
+==================================================================
 Servicio independiente y de SOLO LECTURA sobre signals_log.json.
-No modifica superb-growth ni signals_log.json. Mide automáticamente
-qué pasó con el precio después de cada señal (a 30min, 2h y 24h) y
-guarda el resultado en su propio archivo, en su propio repo.
+No modifica superb-growth ni signals_log.json.
 
-Objetivo: comparar rendimiento real entre TFs (TF1, TF3, TF5, TF15)
-sin depender de revisión manual.
+Para cada señal, descarga las velas de 1m reales desde Binance
+(desde el momento de la señal hasta ahora) y simula la operativa
+exacta de PALMERO: SL -0.5%, TP1 +0.5% (40%), TP2 +0.8% (30%),
+resto (30%) con stop en breakeven tras TP2.
 
-Despliegue: Railway, servicio nuevo e independiente.
+Limitación conocida: solo se usan los maximos/minimos de cada vela
+(no hay datos tick a tick), así que si en una misma vela se cruzan
+dos niveles, se asume el orden mas favorable (toca antes el nivel
+de avance que el de retroceso). Ventana de busqueda: hasta ~33h
+desde la señal (2 paginas de 1000 velas de 1m); si no se resuelve
+en ese plazo, se marca "abierta" y se sigue con el precio mas
+reciente disponible.
 """
 
 import os
@@ -30,15 +36,17 @@ STATS_REPO = os.environ.get("STATS_REPO", "albertomanuelcastrocastro-svg/palmero
 STATS_FILE = "resultados.json"
 GH_TOKEN = os.environ.get("GITHUB_TOKEN")
 
-BINANCE_PRICE_URL = "https://data-api.binance.vision/api/v3/ticker/price"
+BINANCE_KLINES_URL = "https://data-api.binance.vision/api/v3/klines"
 
-CHECKPOINTS = {
-    "r_30m": 30 * 60,
-    "r_2h": 2 * 60 * 60,
-    "r_24h": 24 * 60 * 60,
-}
+SL = -0.005
+TP1 = 0.005
+TP2 = 0.008
+PESO_TP1 = 0.40
+PESO_TP2 = 0.30
+PESO_TP3 = 0.30
+MAX_PAGINAS = 2
 
-POLL_SECONDS = 180
+POLL_SECONDS = 600
 
 _lock = threading.Lock()
 
@@ -100,14 +108,94 @@ def save_resultados(data, sha):
         print("Error guardando resultados:", e)
 
 
-def get_price(symbol):
-    try:
-        resp = requests.get(BINANCE_PRICE_URL, params={"symbol": symbol}, timeout=10)
-        resp.raise_for_status()
-        return float(resp.json()["price"])
-    except Exception as e:
-        print("Error precio Binance:", symbol, e)
-        return None
+def fetch_klines_range(symbol, start_ms, end_ms):
+    velas = []
+    cursor = start_ms
+    for _ in range(MAX_PAGINAS):
+        if cursor >= end_ms:
+            break
+        try:
+            params = {
+                "symbol": symbol, "interval": "1m",
+                "startTime": cursor, "endTime": end_ms, "limit": 1000,
+            }
+            resp = requests.get(BINANCE_KLINES_URL, params=params, timeout=10)
+            resp.raise_for_status()
+            raw = resp.json()
+        except Exception as e:
+            print("Error klines:", symbol, e)
+            break
+        if not raw:
+            break
+        velas.extend(raw)
+        cursor = raw[-1][6] + 1
+        if len(raw) < 1000:
+            break
+    return velas
+
+
+def simular_trade(signal):
+    entry = float(signal["precio"])
+    es_long = "LONG" in signal["tipo"]
+    dir_mult = 1 if es_long else -1
+    symbol = signal["simbolo"]
+
+    ts = datetime.fromisoformat(signal["timestamp"].replace("Z", "+00:00"))
+    start_ms = int(ts.timestamp() * 1000)
+    end_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+
+    velas = fetch_klines_range(symbol, start_ms, end_ms)
+    if not velas:
+        return {"estado": "sin_datos", "resultado_pct": None, "velas_analizadas": 0}
+
+    fase = 1
+    realizado = 0.0
+    estado = None
+
+    for k in velas:
+        high = float(k[2])
+        low = float(k[3])
+        avance_high = dir_mult * (high - entry) / entry
+        avance_low = dir_mult * (low - entry) / entry
+
+        if fase == 1:
+            if avance_low <= SL:
+                estado = "cerrada_sl"
+                realizado = SL
+                break
+            if avance_high >= TP1:
+                realizado += PESO_TP1 * TP1
+                fase = 2
+
+        if fase == 2:
+            if avance_low <= 0:
+                estado = "cerrada_be1"
+                break
+            if avance_high >= TP2:
+                realizado += PESO_TP2 * TP2
+                fase = 3
+
+        if fase == 3:
+            if avance_low <= 0:
+                estado = "cerrada_be2"
+                break
+
+    if estado is None:
+        precio_ultimo = float(velas[-1][4])
+        avance_actual = dir_mult * (precio_ultimo - entry) / entry
+        if fase == 1:
+            estado = "abierta_fase1"
+            resultado_pct = round(avance_actual * 100, 3)
+        elif fase == 2:
+            estado = "abierta_fase2"
+            resultado_pct = round((realizado + 0.60 * avance_actual) * 100, 3)
+        else:
+            estado = "abierta_fase3"
+            resultado_pct = round((realizado + PESO_TP3 * avance_actual) * 100, 3)
+    else:
+        resultado_pct = round(realizado * 100, 3)
+
+    return {"estado": estado, "resultado_pct": resultado_pct, "velas_analizadas": len(velas)}
 
 
 def procesar():
@@ -117,36 +205,34 @@ def procesar():
                 signals = load_signals()
                 resultados, sha = load_resultados()
                 cambiado = False
-                ahora = datetime.now(timezone.utc)
+                ahora = datetime.now(timezone.utc).isoformat()
 
                 for s in signals:
                     sid = str(s["id"])
-                    if sid not in resultados:
-                        resultados[sid] = {
-                            "simbolo": s["simbolo"],
-                            "tipo": s["tipo"],
-                            "tf": s["tf"],
-                            "precio_entrada": float(s["precio"]),
-                            "timestamp": s["timestamp"],
-                        }
+                    existente = resultados.get(sid)
+                    if existente and existente.get("estado", "").startswith("cerrada"):
+                        continue
 
-                    entry = resultados[sid]
-                    ts = datetime.fromisoformat(s["timestamp"].replace("Z", "+00:00"))
-                    elapsed = (ahora - ts).total_seconds()
+                    sim = simular_trade(s)
+                    if sim["resultado_pct"] is None:
+                        continue
 
-                    for campo, segundos in CHECKPOINTS.items():
-                        if campo not in entry and elapsed >= segundos:
-                            precio_actual = get_price(s["simbolo"])
-                            if precio_actual is not None:
-                                cambio_pct = round(
-                                    (precio_actual - entry["precio_entrada"]) / entry["precio_entrada"] * 100, 3
-                                )
-                                entry[campo] = cambio_pct
-                                cambiado = True
+                    resultados[sid] = {
+                        "simbolo": s["simbolo"],
+                        "tipo": s["tipo"],
+                        "tf": s["tf"],
+                        "precio_entrada": float(s["precio"]),
+                        "timestamp": s["timestamp"],
+                        "estado": sim["estado"],
+                        "resultado_pct": sim["resultado_pct"],
+                        "velas_analizadas": sim["velas_analizadas"],
+                        "actualizado_utc": ahora,
+                    }
+                    cambiado = True
 
                 if cambiado:
                     save_resultados(resultados, sha)
-                    print(f"[{ahora.isoformat()}] Resultados actualizados")
+                    print(f"[{ahora}] Resultados actualizados")
 
         except Exception as e:
             print("Error en bucle de procesamiento:", e)
@@ -170,31 +256,32 @@ iniciar_hilo()
 
 def calcular_resumen():
     resultados, _ = load_resultados()
-    resumen = {}
+    grupos = {}
     for sid, r in resultados.items():
         clave = (r["simbolo"], r["tf"])
-        if clave not in resumen:
-            resumen[clave] = {"n": 0, "r_30m": [], "r_2h": [], "r_24h": []}
-        resumen[clave]["n"] += 1
-        for campo in ["r_30m", "r_2h", "r_24h"]:
-            if campo in r:
-                resumen[clave][campo].append(r[campo])
+        grupos.setdefault(clave, {"cerradas": [], "abiertas": []})
+        if r["estado"].startswith("cerrada"):
+            grupos[clave]["cerradas"].append(r["resultado_pct"])
+        elif r["estado"].startswith("abierta"):
+            grupos[clave]["abiertas"].append(r["resultado_pct"])
 
     salida = []
-    for (simbolo, tf), v in resumen.items():
-        fila = {"simbolo": simbolo, "tf": tf, "n_senales": v["n"]}
-        for campo in ["r_30m", "r_2h", "r_24h"]:
-            valores = v[campo]
-            if valores:
-                fila[campo + "_promedio"] = round(sum(valores) / len(valores), 3)
-                fila[campo + "_winrate"] = round(
-                    sum(1 for x in valores if x > 0) / len(valores) * 100, 1
-                )
-                fila[campo + "_n"] = len(valores)
-            else:
-                fila[campo + "_promedio"] = None
-                fila[campo + "_winrate"] = None
-                fila[campo + "_n"] = 0
+    for (simbolo, tf), v in grupos.items():
+        cerradas = v["cerradas"]
+        abiertas = v["abiertas"]
+        fila = {
+            "simbolo": simbolo, "tf": tf,
+            "n_cerradas": len(cerradas),
+            "n_abiertas": len(abiertas),
+        }
+        if cerradas:
+            fila["resultado_promedio_pct"] = round(sum(cerradas) / len(cerradas), 3)
+            fila["winrate_pct"] = round(sum(1 for x in cerradas if x > 0) / len(cerradas) * 100, 1)
+        else:
+            fila["resultado_promedio_pct"] = None
+            fila["winrate_pct"] = None
+        if abiertas:
+            fila["flotante_promedio_pct"] = round(sum(abiertas) / len(abiertas), 3)
         salida.append(fila)
 
     salida.sort(key=lambda f: (f["simbolo"], f["tf"]))
@@ -204,7 +291,7 @@ def calcular_resumen():
 @app.route("/")
 def home():
     return jsonify({
-        "servicio": "PALMERO - Historiador de señales",
+        "servicio": "PALMERO - Historiador de señales (v2, simula SL/TP reales)",
         "nota": "Solo lectura sobre signals_log.json. No modifica superb-growth.",
         "endpoints": ["/stats - resumen por simbolo y TF", "/stats/raw - resultados detallados", "/stats/t/<bust> - version sin cache"],
     })
@@ -212,10 +299,7 @@ def home():
 
 @app.route("/stats")
 def stats():
-    return jsonify({
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "resumen": calcular_resumen(),
-    })
+    return jsonify({"timestamp_utc": datetime.now(timezone.utc).isoformat(), "resumen": calcular_resumen()})
 
 
 @app.route("/stats/raw")
