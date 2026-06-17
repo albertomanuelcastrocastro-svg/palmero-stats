@@ -1,5 +1,5 @@
 """
-PALMERO - Historiador de Señales (v4: laboratorio cacheado + configs ATR + sin_breakeven)
+PALMERO - Historiador de Señales (v5: 4 tramos + nueva filosofia)
 """
 
 import os
@@ -28,44 +28,62 @@ ATR_PERIODOS = 14
 
 CONFIGS = {
     "actual": {
-        "sl_pct": -0.005, "tp1_pct": 0.005, "tp1_peso": 0.40,
-        "tp2_pct": 0.008, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": 0.0, "stop_tras_tp2_pct": 0.0,
-    },
-    "margen_suave": {
-        "sl_pct": -0.005, "tp1_pct": 0.005, "tp1_peso": 0.40,
-        "tp2_pct": 0.008, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": -0.0015, "stop_tras_tp2_pct": -0.0015,
+        "tramos": [
+            {"tp_pct": 0.005, "peso": 0.40},
+            {"tp_pct": 0.008, "peso": 0.30},
+            {"tp_pct": None,  "peso": 0.30},
+        ],
+        "sl_pct": -0.005,
+        "stop_fijo": False,
     },
     "margen_amplio": {
-        "sl_pct": -0.005, "tp1_pct": 0.005, "tp1_peso": 0.40,
-        "tp2_pct": 0.008, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": -0.003, "stop_tras_tp2_pct": -0.003,
-    },
-    "sl_amplio": {
-        "sl_pct": -0.008, "tp1_pct": 0.005, "tp1_peso": 0.40,
-        "tp2_pct": 0.008, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": 0.0, "stop_tras_tp2_pct": 0.0,
-    },
-    "tp_mas_cerca": {
-        "sl_pct": -0.005, "tp1_pct": 0.003, "tp1_peso": 0.40,
-        "tp2_pct": 0.006, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": 0.0, "stop_tras_tp2_pct": 0.0,
-    },
-    "sin_breakeven": {
-        "sl_pct": -0.005, "tp1_pct": 0.005, "tp1_peso": 0.40,
-        "tp2_pct": 0.008, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": -0.005, "stop_tras_tp2_pct": -0.005,
+        "tramos": [
+            {"tp_pct": 0.005, "peso": 0.40},
+            {"tp_pct": 0.008, "peso": 0.30},
+            {"tp_pct": None,  "peso": 0.30},
+        ],
+        "sl_pct": -0.005,
+        "stop_fijo": False,
+        "margen_be": -0.003,
     },
     "sin_be_margen_amplio": {
-        "sl_pct": -0.005, "tp1_pct": 0.005, "tp1_peso": 0.40,
-        "tp2_pct": 0.008, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": -0.003, "stop_tras_tp2_pct": -0.003,
+        "tramos": [
+            {"tp_pct": 0.005, "peso": 0.40},
+            {"tp_pct": 0.008, "peso": 0.30},
+            {"tp_pct": None,  "peso": 0.30},
+        ],
+        "sl_pct": -0.005,
+        "stop_fijo": True,
     },
     "escala_amplia": {
-        "sl_pct": -0.02, "tp1_pct": 0.01, "tp1_peso": 0.40,
-        "tp2_pct": 0.016, "tp2_peso": 0.30,
-        "stop_tras_tp1_pct": -0.01, "stop_tras_tp2_pct": -0.01,
+        "tramos": [
+            {"tp_pct": 0.01,  "peso": 0.40},
+            {"tp_pct": 0.016, "peso": 0.30},
+            {"tp_pct": None,  "peso": 0.30},
+        ],
+        "sl_pct": -0.02,
+        "stop_fijo": True,
+        "margen_be": -0.01,
+    },
+    "nueva_filosofia_a": {
+        "tramos": [
+            {"tp_pct": 0.00625, "peso": 0.40},
+            {"tp_pct": 0.01,    "peso": 0.20},
+            {"tp_pct": 0.02,    "peso": 0.20},
+            {"tp_pct": 0.05,    "peso": 0.20},
+        ],
+        "sl_pct": -0.01,
+        "stop_fijo": True,
+    },
+    "nueva_filosofia_b": {
+        "tramos": [
+            {"tp_pct": 0.00625, "peso": 0.40},
+            {"tp_pct": 0.01,    "peso": 0.30},
+            {"tp_pct": 0.02,    "peso": 0.10},
+            {"tp_pct": 0.05,    "peso": 0.20},
+        ],
+        "sl_pct": -0.01,
+        "stop_fijo": True,
     },
 }
 
@@ -214,24 +232,32 @@ def construir_cfg_atr(signal, atr_cfg):
         return None
     atr_pct = atr / entry
     return {
+        "tramos": [
+            {"tp_pct": atr_cfg["tp1_mult"] * atr_pct, "peso": atr_cfg["tp1_peso"]},
+            {"tp_pct": atr_cfg["tp2_mult"] * atr_pct, "peso": atr_cfg["tp2_peso"]},
+            {"tp_pct": None, "peso": 1 - atr_cfg["tp1_peso"] - atr_cfg["tp2_peso"]},
+        ],
         "sl_pct": atr_cfg["sl_mult"] * atr_pct,
-        "tp1_pct": atr_cfg["tp1_mult"] * atr_pct,
-        "tp1_peso": atr_cfg["tp1_peso"],
-        "tp2_pct": atr_cfg["tp2_mult"] * atr_pct,
-        "tp2_peso": atr_cfg["tp2_peso"],
-        "stop_tras_tp1_pct": atr_cfg["stop_tras_tp1_mult"] * atr_pct,
-        "stop_tras_tp2_pct": atr_cfg["stop_tras_tp2_mult"] * atr_pct,
+        "stop_fijo": False,
+        "margen_be": atr_cfg["stop_tras_tp1_mult"] * atr_pct,
     }
 
 
 def simular_trade_config(signal, velas, cfg):
     if not velas or cfg is None:
         return None
+
     entry = float(signal["precio"])
     es_long = "LONG" in signal["tipo"]
     dir_mult = 1 if es_long else -1
 
-    fase = 1
+    tramos = cfg["tramos"]
+    sl_pct = cfg["sl_pct"]
+    stop_fijo = cfg.get("stop_fijo", False)
+    margen_be = cfg.get("margen_be", 0.0)
+
+    stop_actual = sl_pct
+    tramo_actual = 0
     realizado = 0.0
     estado = None
 
@@ -241,46 +267,40 @@ def simular_trade_config(signal, velas, cfg):
         avance_high = dir_mult * (high - entry) / entry
         avance_low = dir_mult * (low - entry) / entry
 
-        if fase == 1:
-            if avance_low <= cfg["sl_pct"]:
-                estado = "cerrada_sl"
-                realizado = cfg["sl_pct"]
-                break
-            if avance_high >= cfg["tp1_pct"]:
-                realizado += cfg["tp1_peso"] * cfg["tp1_pct"]
-                fase = 2
+        if avance_low <= stop_actual:
+            peso_restante = sum(t["peso"] for t in tramos[tramo_actual:])
+            realizado += peso_restante * stop_actual
+            estado = f"cerrada_stop_t{tramo_actual+1}"
+            break
 
-        if fase == 2:
-            if avance_low <= cfg["stop_tras_tp1_pct"]:
-                peso_resto = 1 - cfg["tp1_peso"]
-                realizado += peso_resto * cfg["stop_tras_tp1_pct"]
-                estado = "cerrada_be1"
-                break
-            if avance_high >= cfg["tp2_pct"]:
-                realizado += cfg["tp2_peso"] * cfg["tp2_pct"]
-                fase = 3
+        while tramo_actual < len(tramos):
+            tp = tramos[tramo_actual]["tp_pct"]
+            peso = tramos[tramo_actual]["peso"]
 
-        if fase == 3:
-            if avance_low <= cfg["stop_tras_tp2_pct"]:
-                peso_resto = 1 - cfg["tp1_peso"] - cfg["tp2_peso"]
-                realizado += peso_resto * cfg["stop_tras_tp2_pct"]
-                estado = "cerrada_be2"
+            if tp is None:
+                break
+
+            if avance_high >= tp:
+                realizado += peso * tp
+                tramo_actual += 1
+                if not stop_fijo:
+                    stop_actual = margen_be
+            else:
                 break
 
     if estado is None:
         precio_ultimo = float(velas[-1][4])
         avance_actual = dir_mult * (precio_ultimo - entry) / entry
-        if fase == 1:
-            estado = "abierta_fase1"
-            resultado = avance_actual
-        elif fase == 2:
-            peso_resto = 1 - cfg["tp1_peso"]
-            resultado = realizado + peso_resto * avance_actual
-            estado = "abierta_fase2"
+        peso_restante = sum(t["peso"] for t in tramos[tramo_actual:])
+
+        if tramo_actual == 0:
+            estado = "abierta_t1"
+        elif tramo_actual < len(tramos) - 1:
+            estado = f"abierta_t{tramo_actual+1}"
         else:
-            peso_resto = 1 - cfg["tp1_peso"] - cfg["tp2_peso"]
-            resultado = realizado + peso_resto * avance_actual
-            estado = "abierta_fase3"
+            estado = "abierta_caballo"
+
+        resultado = realizado + peso_restante * avance_actual
     else:
         resultado = realizado
 
@@ -289,6 +309,7 @@ def simular_trade_config(signal, velas, cfg):
 
 def calcular_laboratorio_interno(signals):
     salida = []
+
     for nombre, cfg in CONFIGS.items():
         valores = []
         for s in signals:
@@ -412,13 +433,13 @@ def calcular_resumen():
 @app.route("/")
 def home():
     return jsonify({
-        "servicio": "PALMERO - Historiador de señales (v4, laboratorio cacheado + ATR + sin_breakeven)",
+        "servicio": "PALMERO - Historiador de señales (v5, 4 tramos + nueva filosofia)",
         "nota": "Solo lectura sobre signals_log.json. No modifica superb-growth.",
         "endpoints": [
             "/stats - resumen real (config actual) por simbolo y TF",
             "/stats/raw - resultados detallados",
             "/stats/t/<bust> - version sin cache",
-            "/laboratorio - compara configuraciones (fijas + ATR + sin_breakeven), cacheado cada 10 min",
+            "/laboratorio - compara todas las configuraciones",
             "/laboratorio/t/<bust> - version sin cache",
         ],
     })
