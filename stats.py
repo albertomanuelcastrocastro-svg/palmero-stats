@@ -1,5 +1,5 @@
 """
-PALMERO - Historiador de Señales (v5: 4 tramos + nueva filosofia)
+PALMERO - Historiador de Señales (v6: filtro TF5 y TF15)
 """
 
 import os
@@ -25,6 +25,8 @@ BINANCE_KLINES_URL = "https://data-api.binance.vision/api/v3/klines"
 MAX_PAGINAS = 2
 POLL_SECONDS = 600
 ATR_PERIODOS = 14
+
+TFS_OPERATIVOS = ("5", "15")
 
 CONFIGS = {
     "actual": {
@@ -315,9 +317,11 @@ def simular_trade_config(signal, velas, cfg):
 
 def calcular_laboratorio_interno(signals):
     salida = []
+    signals_filtradas = [s for s in signals if s["tf"] in TFS_OPERATIVOS]
+
     for nombre, cfg in CONFIGS.items():
         valores = []
-        for s in signals:
+        for s in signals_filtradas:
             velas = obtener_velas(s)
             r = simular_trade_config(s, velas, cfg)
             if r:
@@ -333,7 +337,7 @@ def calcular_laboratorio_interno(signals):
 
     for nombre, atr_cfg in ATR_CONFIGS.items():
         valores = []
-        for s in signals:
+        for s in signals_filtradas:
             velas = obtener_velas(s)
             cfg = construir_cfg_atr(s, atr_cfg)
             r = simular_trade_config(s, velas, cfg)
@@ -438,13 +442,13 @@ def calcular_resumen():
 @app.route("/")
 def home():
     return jsonify({
-        "servicio": "PALMERO - Historiador de señales (v5, 4 tramos + nueva filosofia)",
-        "nota": "Solo lectura sobre signals_log.json. No modifica superb-growth.",
+        "servicio": "PALMERO - Historiador de señales (v6, filtro TF5+TF15)",
+        "nota": "Laboratorio solo sobre señales TF5 y TF15.",
         "endpoints": [
-            "/stats - resumen real (config actual) por simbolo y TF",
+            "/stats - resumen real (config actual) todas las señales",
             "/stats/raw - resultados detallados",
             "/stats/t/<bust> - version sin cache",
-            "/laboratorio - compara todas las configuraciones",
+            "/laboratorio - compara configs solo TF5+TF15",
             "/laboratorio/t/<bust> - version sin cache",
         ],
     })
