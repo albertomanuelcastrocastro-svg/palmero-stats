@@ -85,6 +85,16 @@ CONFIGS = {
         "sl_pct": -0.01,
         "stop_fijo": True,
     },
+    "filosofia_sl05": {
+        "tramos": [
+            {"tp_pct": 0.005,  "peso": 0.50},
+            {"tp_pct": 0.01,   "peso": 0.20},
+            {"tp_pct": 0.02,   "peso": 0.20},
+            {"tp_pct": 0.05,   "peso": 0.10},
+        ],
+        "sl_pct": -0.005,
+        "stop_fijo": True,
+    },
 }
 
 ATR_CONFIGS = {
@@ -276,10 +286,8 @@ def simular_trade_config(signal, velas, cfg):
         while tramo_actual < len(tramos):
             tp = tramos[tramo_actual]["tp_pct"]
             peso = tramos[tramo_actual]["peso"]
-
             if tp is None:
                 break
-
             if avance_high >= tp:
                 realizado += peso * tp
                 tramo_actual += 1
@@ -292,14 +300,12 @@ def simular_trade_config(signal, velas, cfg):
         precio_ultimo = float(velas[-1][4])
         avance_actual = dir_mult * (precio_ultimo - entry) / entry
         peso_restante = sum(t["peso"] for t in tramos[tramo_actual:])
-
         if tramo_actual == 0:
             estado = "abierta_t1"
         elif tramo_actual < len(tramos) - 1:
             estado = f"abierta_t{tramo_actual+1}"
         else:
             estado = "abierta_caballo"
-
         resultado = realizado + peso_restante * avance_actual
     else:
         resultado = realizado
@@ -309,7 +315,6 @@ def simular_trade_config(signal, velas, cfg):
 
 def calcular_laboratorio_interno(signals):
     salida = []
-
     for nombre, cfg in CONFIGS.items():
         valores = []
         for s in signals:
