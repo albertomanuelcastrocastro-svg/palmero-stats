@@ -271,7 +271,7 @@
     "timestamp": "2026-06-15T11:07:02.934Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.219,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "32": {
     "simbolo": "XRPUSDT",
@@ -281,7 +281,7 @@
     "timestamp": "2026-06-15T10:36:02.418Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.269,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "31": {
     "simbolo": "SOLUSDT",
@@ -291,7 +291,7 @@
     "timestamp": "2026-06-15T10:05:04.803Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.537,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "30": {
     "simbolo": "XRPUSDT",
@@ -301,7 +301,7 @@
     "timestamp": "2026-06-15T09:54:03.869Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.326,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "29": {
     "simbolo": "SOLUSDT",
@@ -410,7 +410,7 @@
     "timestamp": "2026-06-14T15:52:04.334Z",
     "estado": "abierta_caballo",
     "resultado_pct": 3.067,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "19": {
     "simbolo": "XRPUSDT",
@@ -629,7 +629,7 @@
     "timestamp": "2026-06-19T03:15:06.961Z",
     "estado": "abierta_t2",
     "resultado_pct": 0.373,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "59": {
     "simbolo": "XRPUSDT",
@@ -639,7 +639,7 @@
     "timestamp": "2026-06-19T04:02:03.685Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.335,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "60": {
     "simbolo": "XRPUSDT",
@@ -649,7 +649,7 @@
     "timestamp": "2026-06-19T04:56:02.606Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.337,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   },
   "61": {
     "simbolo": "SOLUSDT",
@@ -659,6 +659,6 @@
     "timestamp": "2026-06-19T10:17:03.119Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.117,
-    "actualizado_utc": "2026-06-19T10:42:38.256623+00:00"
+    "actualizado_utc": "2026-06-19T10:52:39.553573+00:00"
   }
 }
