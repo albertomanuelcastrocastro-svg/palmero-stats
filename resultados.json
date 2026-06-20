@@ -271,7 +271,7 @@
     "timestamp": "2026-06-15T11:07:02.934Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.219,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "32": {
     "simbolo": "XRPUSDT",
@@ -281,7 +281,7 @@
     "timestamp": "2026-06-15T10:36:02.418Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.269,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "31": {
     "simbolo": "SOLUSDT",
@@ -291,7 +291,7 @@
     "timestamp": "2026-06-15T10:05:04.803Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.537,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "30": {
     "simbolo": "XRPUSDT",
@@ -301,7 +301,7 @@
     "timestamp": "2026-06-15T09:54:03.869Z",
     "estado": "abierta_caballo",
     "resultado_pct": 1.326,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "29": {
     "simbolo": "SOLUSDT",
@@ -410,7 +410,7 @@
     "timestamp": "2026-06-14T15:52:04.334Z",
     "estado": "abierta_caballo",
     "resultado_pct": 3.067,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "19": {
     "simbolo": "XRPUSDT",
@@ -629,7 +629,7 @@
     "timestamp": "2026-06-19T03:15:06.961Z",
     "estado": "abierta_t2",
     "resultado_pct": 0.373,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "59": {
     "simbolo": "XRPUSDT",
@@ -639,7 +639,7 @@
     "timestamp": "2026-06-19T04:02:03.685Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.335,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "60": {
     "simbolo": "XRPUSDT",
@@ -649,7 +649,7 @@
     "timestamp": "2026-06-19T04:56:02.606Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.337,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "61": {
     "simbolo": "SOLUSDT",
@@ -659,7 +659,7 @@
     "timestamp": "2026-06-19T10:17:03.119Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.117,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "62": {
     "simbolo": "SOLUSDT",
@@ -669,7 +669,7 @@
     "timestamp": "2026-06-19T12:16:04.458Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.161,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "63": {
     "simbolo": "XRPUSDT",
@@ -689,7 +689,7 @@
     "timestamp": "2026-06-19T15:52:04.917Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.009,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "66": {
     "simbolo": "SOLUSDT",
@@ -699,7 +699,7 @@
     "timestamp": "2026-06-19T16:09:03.318Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.289,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "67": {
     "simbolo": "XRPUSDT",
@@ -709,7 +709,7 @@
     "timestamp": "2026-06-19T16:20:05.288Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.07,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "68": {
     "simbolo": "SOLUSDT",
@@ -719,7 +719,7 @@
     "timestamp": "2026-06-19T16:30:07.558Z",
     "estado": "abierta_t1",
     "resultado_pct": 0.086,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "69": {
     "simbolo": "XRPUSDT",
@@ -729,7 +729,7 @@
     "timestamp": "2026-06-19T16:36:03.176Z",
     "estado": "abierta_t1",
     "resultado_pct": 0.044,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "70": {
     "simbolo": "XRPUSDT",
@@ -739,7 +739,7 @@
     "timestamp": "2026-06-19T18:18:02.920Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.097,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "71": {
     "simbolo": "XRPUSDT",
@@ -749,7 +749,7 @@
     "timestamp": "2026-06-19T20:21:02.655Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.124,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "73": {
     "simbolo": "SOLUSDT",
@@ -759,7 +759,7 @@
     "timestamp": "2026-06-19T20:41:02.993Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.058,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "72": {
     "simbolo": "SOLUSDT",
@@ -769,7 +769,7 @@
     "timestamp": "2026-06-19T20:40:04.547Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.073,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "74": {
     "simbolo": "XRPUSDT",
@@ -779,7 +779,7 @@
     "timestamp": "2026-06-19T21:40:03.931Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.089,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "75": {
     "simbolo": "XRPUSDT",
@@ -789,7 +789,7 @@
     "timestamp": "2026-06-19T23:50:05.664Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.053,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "76": {
     "simbolo": "XRPUSDT",
@@ -799,7 +799,7 @@
     "timestamp": "2026-06-20T01:08:04.704Z",
     "estado": "abierta_t1",
     "resultado_pct": -0.035,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "77": {
     "simbolo": "XRPUSDT",
@@ -809,7 +809,7 @@
     "timestamp": "2026-06-20T02:09:02.732Z",
     "estado": "abierta_t1",
     "resultado_pct": 0.097,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   },
   "78": {
     "simbolo": "XRPUSDT",
@@ -819,6 +819,6 @@
     "timestamp": "2026-06-20T02:55:02.756Z",
     "estado": "abierta_t1",
     "resultado_pct": 0.044,
-    "actualizado_utc": "2026-06-20T03:14:50.048167+00:00"
+    "actualizado_utc": "2026-06-20T03:24:51.137523+00:00"
   }
 }
